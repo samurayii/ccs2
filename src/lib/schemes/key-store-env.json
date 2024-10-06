@@ -1,0 +1,21 @@
+{
+    "type": "object",
+    "properties": {
+        "type": {
+            "type": "string",
+            "const": "env"
+        },
+        "key_prefix": {
+            "type": "string",
+            "default": "CCS_ENV_KEY_STORE_",
+            "minLength": 0,
+            "maxLength": 128,
+            "pattern": "^[a-zA-Z]{1}[-a-zA-Z_0-9]{0,127}$"
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "type",
+        "key_prefix"
+    ]
+}

@@ -1,0 +1,92 @@
+{
+    "type": "object",
+    "properties": {
+        "type": {
+            "type": "string",
+            "const": "vault-v1"
+        },
+        "secrets": {
+            "type": "array",
+            "default": [],
+            "items": {
+                "type": "string",
+                "minLength": 1
+            },
+            "minItems": 0
+        },
+        "token": {
+            "type": "string",
+            "default": "",
+            "minLength": 1,
+            "maxLength": 128
+        },
+        "connection": {
+            "type": "object",
+            "properties": {
+                "host": {
+                    "type": "string",
+                    "default": "",
+                    "minLength": 1,
+                    "maxLength": 128
+                },
+                "protocol": {
+                    "type": "string",
+                    "default": "https",
+                    "enum": ["http","https"]
+                },
+                "port": {
+                    "type": "integer",
+                    "default": 8200,
+                    "minimum": 1
+                },
+                "path": {
+                    "type": "string",
+                    "default": "/",
+                    "minLength": 0,
+                    "maxLength": 32,
+                    "pattern": "^(\/[a-zA-Z]{1}|)[-a-zA-Z0-9\/]{0,31}$"
+                },
+                "timeout": {
+                    "type": "string",
+                    "default": "10s",
+                    "pattern": "^[0-9]{1}[smhd]{0,1}[0-9smhd]*[mhsd]{1}"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "host",
+                "protocol",
+                "port",
+                "path",
+                "timeout"
+            ]
+        },        
+        "refresh": {
+            "type": "object",
+            "properties": {
+                "interval": {
+                    "type": "string",
+                    "default": "20s",
+                    "pattern": "^[0-9]{1}[smhd]{0,1}[0-9smhd]*[mhsd]{1}"
+                },
+                "jitter": {
+                    "type": "string",
+                    "default": "5s",
+                    "pattern": "^[0-9]{1}[smhd]{0,1}[0-9smhd]*[mhsd]{1}"
+                }
+            },
+            "required": [
+                "interval",
+                "jitter"
+            ]
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "type",
+        "secrets",
+        "refresh",
+        "connection",
+        "token"
+    ]
+}

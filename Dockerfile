@@ -1,4 +1,4 @@
-FROM mirror.gcr.io/node:20-alpine AS builder
+FROM node:20-alpine AS builder
 ARG NPM_REGISTRY=https://registry.npmjs.org
 RUN npm --registry $NPM_REGISTRY install npm -g
 
@@ -15,7 +15,7 @@ COPY default_config.toml /dist/config.toml
 
 RUN node /dist/app.js --version
 
-FROM mirror.gcr.io/node:20-alpine
+FROM node:20-alpine
 
 USER root
 
@@ -23,19 +23,18 @@ ENV NODE_ENV=production
 ENV NPM_CONFIG_PREFIX=/home/node/.npm-global
 ENV PATH=$PATH:/home/node/.npm-global/bin
 
-WORKDIR /template
+WORKDIR /central-config-server
 
 ENTRYPOINT [ "node" ]
 CMD [ "app.js", "--config", "config.toml" ]
 
 
-COPY --from=builder /dist /template
+COPY --from=builder /dist /central-config-server
 
-RUN chown -R node:node /template
-USER node
-
-RUN node --version && \
+RUN apk add --no-cache git && \
+    git version && \
+    node --version && \
     npm --version && \
-    cd /template && \
+    cd /central-config-server && \
     npm ci && \
     node app.js -v

@@ -4,30 +4,30 @@
         "logger": {
             "type": "object",
             "default": {},
-            "env": "TEMPLATE_LOGGER",
+            "env": "CCS_LOGGER",
             "properties": {
                 "name": {
                     "type": "string",
                     "default": "",
-                    "env": "TEMPLATE_LOGGER_NAME",
+                    "env": "CCS_LOGGER_NAME",
                     "minLength": 0,
                     "maxLength": 32
                 },
                 "enable": {
                     "type": "boolean",
                     "default": true,
-                    "env": "TEMPLATE_LOGGER_ENABLE"
+                    "env": "CCS_LOGGER_ENABLE"
                 },
                 "level": {
                     "type": "string",
                     "default": "error",
-                    "env": "TEMPLATE_LOGGER_LEVEL",
+                    "env": "CCS_LOGGER_LEVEL",
                     "enum": ["fatal","info","error","warn","debug","trace"]
                 },
                 "timestamp": {
                     "type": "string",
                     "default": "none",
-                    "env": "TEMPLATE_LOGGER_TIMESTAMP",
+                    "env": "CCS_LOGGER_TIMESTAMP",
                     "enum": ["full","short","unix","none"]
                 }
             },
@@ -42,29 +42,29 @@
         "api": {
             "type": "object",
             "default": {},
-            "env": "TEMPLATE_API",
+            "env": "CCS_API",
             "properties": {
                 "enable": {
                     "type": "boolean",
                     "default": false,
-                    "env": "TEMPLATE_API_ENABLE"
+                    "env": "CCS_API_ENABLE"
                 },
                 "logging": {
                     "type": "boolean",
                     "default": false,
-                    "env": "TEMPLATE_API_LOGGING"
+                    "env": "CCS_API_LOGGING"
                 },
                 "hostname": {
                     "type": "string",
                     "default": "0.0.0.0",
                     "minLength": 1,
                     "maxLength": 64,
-                    "env": "TEMPLATE_API_HOSTNAME"
+                    "env": "CCS_API_HOSTNAME"
                 },
                 "port": {
                     "type": "integer",
                     "default": 3001,
-                    "env": "TEMPLATE_API_PORT",
+                    "env": "CCS_API_PORT",
                     "minimum": 1,
                     "maximum": 65535
                 },
@@ -73,37 +73,37 @@
                     "default": "/api",
                     "minLength": 0,
                     "maxLength": 32,
-                    "env": "TEMPLATE_API_PREFIX",
+                    "env": "CCS_API_PREFIX",
                     "pattern": "^(\/[a-zA-Z]{1}|)[-a-zA-Z0-9\/]{0,31}$"
                 },
                 "backlog": {
                     "type": "integer",
                     "default": 511,
-                    "env": "TEMPLATE_API_BACKLOG",
+                    "env": "CCS_API_BACKLOG",
                     "minimum": 1
                 },
                 "connection_timeout": {
                     "type": "integer",
                     "default": 0,
-                    "env": "TEMPLATE_API_CONNECTION_TIMEOUT",
+                    "env": "CCS_API_CONNECTION_TIMEOUT",
                     "minimum": 0
                 },
                 "keep_alive_timeout": {
                     "type": "integer",
                     "default": 5000,
-                    "env": "TEMPLATE_API_KEEP_ALIVE_TIMEOUT",
+                    "env": "CCS_API_KEEP_ALIVE_TIMEOUT",
                     "minimum": 1
                 },
                 "body_limit": {
                     "type": "string",
                     "default": "1mb",
-                    "env": "TEMPLATE_API_BODY_LIMIT",
+                    "env": "CCS_API_BODY_LIMIT",
                     "pattern": "^[0-9]{1,10}(b|kb|mb)$"
                 },
                 "trust_proxy": {
                     "type": "boolean",
                     "default": false,
-                    "env": "TEMPLATE_API_TRUST_PROXY"
+                    "env": "CCS_API_TRUST_PROXY"
                 }
             },
             "additionalProperties": false,
@@ -119,10 +119,160 @@
                 "trust_proxy",
                 "logging"
             ]
+        },
+        "metrics": {
+            "type": "object",
+            "default": {},
+            "env": "CCS_METRICS",
+            "properties": {
+                "enable": {
+                    "type": "boolean",
+                    "default": false,
+                    "env": "CCS_METRICS_ENABLE"
+                },
+                "timestamp": {
+                    "type": "boolean",
+                    "default": false,
+                    "env": "CCS_METRICS_TIMESTAMP"
+                },
+                "default": {
+                    "type": "boolean",
+                    "default": false,
+                    "env": "CCS_METRICS_DEFAULT"
+                },
+                "add_hostname": {
+                    "type": "boolean",
+                    "default": false,
+                    "env": "CCS_METRICS_ADD_HOSTNAME"
+                },
+                "prefix": {
+                    "type": "string",
+                    "default": "",
+                    "minLength": 0,
+                    "maxLength": 32,
+                    "env": "CCS_METRICS_PREFIX"
+                },
+                "labels": {
+                    "type": "object",
+                    "default": {},
+                    "env": "CCS_METRICS_LABELS",
+                    "patternProperties": {
+                        "^.*": { 
+                            "type": "string" 
+                        }
+                    }
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "enable",
+                "default",
+                "timestamp",
+                "prefix",
+                "labels",
+                "add_hostname"
+            ]
+        },
+        "namespaces": {
+            "type": "array",
+            "default": [],
+            "env": "CCS_NAMESPACES",
+            "minItems": 0
+        },
+        "key_stores": {
+            "type": "array",
+            "default": [],
+            "env": "CCS_KEY_STORES",
+            "minItems": 0
+        },
+        "gatherer": {
+            "type": "object",
+            "default": {},
+            "env": "CCS_GATHERER",
+            "properties": {
+                "iterations": {
+                    "type": "integer",
+                    "default": 3,
+                    "env": "CCS_GATHERER_ITERATIONS",
+                    "minimum": 1
+                },
+                "thread_count": {
+                    "type": "integer",
+                    "default": 5,
+                    "env": "CCS_GATHERER_THREAD_COUNT",
+                    "minimum": 1
+                },
+                "template_engine": {
+                    "type": "object",
+                    "default": {},
+                    "env": "CCS_GATHERER_TEMPLATE_ENGINE",
+                    "properties": {
+                        "delimiters": {
+                            "type": "array",
+                            "default": ["{{","}}"],
+                            "minItems": 2,
+                            "maxItems": 2
+                        }
+                    },
+                    "required": [
+                        "delimiters"
+                    ]
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "iterations",
+                "thread_count",
+                "template_engine"
+            ]
+        },
+        "sessions": {
+            "type": "object",
+            "default": {},
+            "env": "CCS_SESSIONS",
+            "properties": {
+                "ttl": {
+                    "type": "integer",
+                    "default": 600,
+                    "env": "CCS_SESSIONS_TTL",
+                    "minimum": 1
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "ttl"
+            ]
+        },
+        "authorization": {
+            "type": "object",
+            "default": {},
+            "env": "CCS_AUTHORIZATION",
+            "properties": {
+                "tokens": {
+                    "type": "array",
+                    "default": [],
+                    "env": "CCS_AUTHORIZATION_TOKENS",
+                    "items": {
+                        "type": "string"
+                    },
+                    "minItems": 0
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "tokens"
+            ]
         }
     },
+    "additionalProperties": false,
     "required": [
         "logger",
-        "api"
+        "api",
+        "metrics",
+        "namespaces",
+        "key_stores",
+        "gatherer",
+        "sessions",
+        "authorization"
     ]
 }

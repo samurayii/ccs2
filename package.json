@@ -1,7 +1,7 @@
 {
-    "name": "template",
-    "version": "0.0.1",
-    "description": "Template for nodejs app with fastify",
+    "name": "ccs2",
+    "version": "0.1.1",
+    "description": "Service for configuration centralization",
     "scripts": {
         "up": "ncu --configFilePath ./_common --configFileName ncu_up_config.json && rimraf ./package-lock.json && npm i && ncu --configFilePath ./_common --configFileName ncu_config.json",
         "ncu": "ncu --configFilePath ./_common --configFileName ncu_config.json",
@@ -14,32 +14,34 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/samurayii/fastify-app-starter.git"
+        "url": "git+https://gitlab.tp.sblogistica.ru/platform2.0/infra/ccs2.git"
     },
     "keywords": [
-        "typescript",
-        "fastify",
-        "template"
+        "config",
+        "configuration",
+        "infrastructure"
     ],
     "author": "Nuzhnov A.A.",
     "license": "GNU GPLv3",
     "bugs": {
-        "url": "https://github.com/samurayii/fastify-app-starter/issues"
+        "url": "https://gitlab.tp.sblogistica.ru/platform2.0/infra/ccs2/issues"
     },
-    "homepage": "https://github.com/samurayii/fastify-app-starter.git#readme",
+    "homepage": "https://gitlab.tp.sblogistica.ru/platform2.0/infra/ccs2.git#readme",
     "optionalDependencies": {
-        "@typescript-eslint/eslint-plugin": "^7.11.0",
-        "@typescript-eslint/parser": "^7.11.0",
+        "@typescript-eslint/eslint-plugin": "=7.11.0",
+        "@typescript-eslint/parser": "=7.11.0",
         "eslint": "=8.57.0",
-        "npm-check-updates": "^16.14.20",
+        "npm-check-updates": "^17.1.3",
         "ts-node": "^10.9.2"
     },
     "devDependencies": {
-        "@types/node": "^20.12.12",
+        "@types/node": "^22.6.0",
+        "@types/node-fetch": "^2.6.11",
+        "@types/uuid": "^10.0.0",
         "files-copier": "^0.1.1",
         "json-key-remover": "^0.1.4",
-        "rimraf": "^5.0.7",
-        "typescript": "^5.4.5"
+        "rimraf": "^6.0.1",
+        "typescript": "^5.6.2"
     },
     "copier": {
         "build": {
@@ -53,12 +55,18 @@
         }
     },
     "dependencies": {
-        "ajv": "^8.14.0",
+        "ajv": "^8.17.1",
         "chalk": "=4.1.2",
         "commander": "^12.1.0",
-        "fastify": "^4.27.0",
+        "cron": "^3.1.7",
+        "fastify": "^5.0.0",
+        "handlebars": "^4.7.8",
+        "handlebars-delimiters": "^1.0.0",
         "json-from-default-schema": "^1.0.1",
         "jtomler": "^1.0.1",
-        "logger-event-emitter": "^0.4.10"
+        "logger-event-emitter": "^0.4.10",
+        "node-fetch": "^2.6.7",
+        "uuid": "^10.0.0",
+        "wildcard": "^2.0.1"
     }
 }

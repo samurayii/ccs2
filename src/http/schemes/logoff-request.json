@@ -1,0 +1,14 @@
+{
+    "type": "object",
+    "properties": {
+        "session_token": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "session_token"
+    ]
+}

@@ -1,6 +1,9 @@
 {
     "reject": [
         "chalk",
-        "eslint"
+        "@typescript-eslint/eslint-plugin",
+        "@typescript-eslint/parser",
+        "eslint",
+        "node-fetch"
     ]
 }

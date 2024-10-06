@@ -1,0 +1,78 @@
+{
+    "type": "object",
+    "properties": {
+        "type": {
+            "type": "string",
+            "const": "fs"
+        },
+        "include_regexp": {
+            "type": "array",
+            "default": [".*"],
+            "items": {
+                "type": "string"
+            },
+            "minItems": 1
+        },
+        "exclude_regexp": {
+            "type": "array",
+            "default": [],
+            "items": {
+                "type": "string"
+            },
+            "minItems": 0
+        },
+        "path": {
+            "type": "string",
+            "default": "",
+            "minLength": 1,
+            "maxLength": 256
+        },
+        "size": {
+            "type": "string",
+            "default": "200kb",
+            "pattern": "^[0-9]{1,10}(b|kb|mb)$" 
+        },
+        "cron": {
+            "type": "object",
+            "default": {},
+            "properties": {
+                "enable": {
+                    "type": "boolean",
+                    "default": true
+                },
+                "jitter": {
+                    "type": "integer",
+                    "default": 3,
+                    "minimum": 0
+                },
+                "interval": {
+                    "type": "string",
+                    "default": "1 * * * * *",
+                    "minLength": 1,
+                    "maxLength": 128
+                },
+                "time_zone": {
+                    "type": "string",
+                    "default": "Europe/Moscow",
+                    "minLength": 1,
+                    "maxLength": 64
+                }
+            },
+            "required": [
+                "interval",
+                "time_zone",
+                "enable",
+                "jitter"
+            ]
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "type",
+        "include_regexp",
+        "exclude_regexp",
+        "size",
+        "path",
+        "cron"
+    ]
+}

@@ -15,3 +15,41 @@
     keep_alive_timeout = 5000   # таймаут keep-alive сервера в милисекундах
     body_limit = "1mb"          # максимальный размер тела запроса (b, kb, mb)
     trust_proxy = false         # доверие proxy закголовку
+
+[gatherer]              # Настройка процесса сборки
+    iterations = 3      # количество вложенностей ключей
+    thread_count = 5    # количество потоков обработки
+    [gatherer.template_engine]      # настройка шаблонизатора
+        delimiters = ["{{","}}"]    # разделители
+
+[sessions]      # настройка сессий
+    ttl = 600   # время сессии в секундах
+
+[authorization]                 # настройка конфигурации (настройка для типа token)
+    tokens = ["secret_token"]   # массив секретных токенов
+
+[[key_stores]]                  # массив настроек хранилищ ключей
+    name = "env-key-store"
+    enable = false
+    [key_stores.source]
+        type = "env"
+        key_prefix = "CCS_ENV_KEY_STORE_"
+
+[[namespaces]]                  # массив настроек хранилищ файлов конфигурации
+    name = "git-namespace"
+    enable = false
+    links = []
+    [namespaces.source]
+        type = "git"
+        include_regexp = [".*"]
+        exclude_regexp = []
+        tmp = "tmp"
+        commit_count = 10
+        repository = "https://user:password@server:3000/repository.git"
+        branch = "master"
+        size = "200kb"
+        [namespaces.source.cron]
+            enable = true
+            jitter = 3
+            interval = "*/10 * * * * *"
+            time_zone = "Europe/Moscow"

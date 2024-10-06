@@ -1,3 +1,3 @@
-# fastify-app-starter
+# Central-config-server
 
-install: `npm install -g npm && npm install`
+Сервер центральной системы конфигурации. [Документация](docs/README.md)
