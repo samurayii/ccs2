@@ -31,8 +31,6 @@ CMD [ "app.js", "--config", "config.toml" ]
 RUN apk add --no-cache git && \
     git version
 
-USER node
-
 COPY --from=builder /dist /central-config-server
 
 RUN git version && \
@@ -41,3 +39,5 @@ RUN git version && \
     cd /central-config-server && \
     npm ci && \
     node app.js -v
+
+USER node
