@@ -15,14 +15,31 @@ build:
     script:
         - export VERSION=$(grep \"version\" package.json | grep -o [0-9.]*).${CI_PIPELINE_IID}
         - mkdir -p /kaniko/.docker
-        - echo "{\"auths\":{\"${CI_REGISTRY}\":{\"auth\":\"$(printf "%s:%s" "${CI_REGISTRY_USER}" "${CI_REGISTRY_PASSWORD}" | base64 | tr -d '\n')\"}}}" > /kaniko/.docker/config.json
-        - /kaniko/executor --build-arg NPM_REGISTRY=$NPM_REGISTRY --build-arg http_proxy=$HTTP_PROXY --build-arg https_proxy=$HTTPS_PROXY --build-arg no_proxy=$NO_PROXY --context "./" --dockerfile "./Dockerfile" --destination "${CI_REGISTRY_IMAGE}:${VERSION}" --destination "${CI_REGISTRY_IMAGE}:latest"
-        - echo ${CI_REGISTRY_IMAGE}:${VERSION}
+        - echo "{\"auths\":{\"${HARBOR_HOST}\":{\"auth\":\"$(printf "%s:%s" "${HARBOR_USERNAME}" "${HARBOR_PASSWORD}" | base64 | tr -d '\n')\"}}}" > /kaniko/.docker/config.json
+        - /kaniko/executor --build-arg NPM_REGISTRY=$NPM_REGISTRY --build-arg http_proxy=$HTTP_PROXY --build-arg https_proxy=$HTTPS_PROXY --build-arg no_proxy=$NO_PROXY --context "./" --dockerfile "./Dockerfile" --destination "${HARBOR_HOST}/${HARBOR_PROJECT}/${CI_PROJECT_NAME}:${VERSION}" --destination "${HARBOR_HOST}/${HARBOR_PROJECT}/${CI_PROJECT_NAME}:latest"
+        - echo ${HARBOR_HOST}/${HARBOR_PROJECT}/${CI_PROJECT_NAME}:${VERSION}
     only:
         refs:
-            - main
+            - master
     allow_failure: false
     when: manual 
+
+# build:
+#     stage: build
+#     image: registry.tp.sblogistica.ru/platform2.0/ci-cd/kaniko:debug
+#     tags:
+#         - kaniko
+#     script:
+#         - export VERSION=$(grep \"version\" package.json | grep -o [0-9.]*).${CI_PIPELINE_IID}
+#         - mkdir -p /kaniko/.docker
+#         - echo "{\"auths\":{\"${CI_REGISTRY}\":{\"auth\":\"$(printf "%s:%s" "${CI_REGISTRY_USER}" "${CI_REGISTRY_PASSWORD}" | base64 | tr -d '\n')\"}}}" > /kaniko/.docker/config.json
+#         - /kaniko/executor --build-arg NPM_REGISTRY=$NPM_REGISTRY --build-arg http_proxy=$HTTP_PROXY --build-arg https_proxy=$HTTPS_PROXY --build-arg no_proxy=$NO_PROXY --context "./" --dockerfile "./Dockerfile" --destination "${CI_REGISTRY_IMAGE}:${VERSION}" --destination "${CI_REGISTRY_IMAGE}:latest"
+#         - echo ${CI_REGISTRY_IMAGE}:${VERSION}
+#     only:
+#         refs:
+#             - main
+#     allow_failure: false
+#     when: manual 
 
 badge:
     stage: post
