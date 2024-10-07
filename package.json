@@ -1,6 +1,6 @@
 {
     "name": "ccs2",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "description": "Service for configuration centralization",
     "scripts": {
         "up": "ncu --configFilePath ./_common --configFileName ncu_up_config.json && rimraf ./package-lock.json && npm i && ncu --configFilePath ./_common --configFileName ncu_config.json",
@@ -40,7 +40,6 @@
         "@types/uuid": "^10.0.0",
         "files-copier": "^0.1.1",
         "json-key-remover": "^0.1.4",
-        "rimraf": "^6.0.1",
         "typescript": "^5.6.2"
     },
     "copier": {
@@ -67,6 +66,7 @@
         "logger-event-emitter": "^0.4.10",
         "node-fetch": "^2.6.7",
         "uuid": "^10.0.0",
-        "wildcard": "^2.0.1"
+        "wildcard": "^2.0.1",
+        "rimraf": "^6.0.1"
     }
 }

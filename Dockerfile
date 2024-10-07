@@ -28,11 +28,14 @@ WORKDIR /central-config-server
 ENTRYPOINT [ "node" ]
 CMD [ "app.js", "--config", "config.toml" ]
 
+RUN apk add --no-cache git && \
+    git version
+
+USER node
 
 COPY --from=builder /dist /central-config-server
 
-RUN apk add --no-cache git && \
-    git version && \
+RUN git version && \
     node --version && \
     npm --version && \
     cd /central-config-server && \
