@@ -20,7 +20,7 @@ build:
         - echo ${HARBOR_HOST}/${HARBOR_PROJECT}/${CI_PROJECT_NAME}:${VERSION}
     only:
         refs:
-            - master
+            - main
     allow_failure: false
     when: manual 
 
