@@ -101,7 +101,7 @@ export class NamespaceRepository extends EventEmitter implements INamespaceRepos
             const files_list = namespace.list;
             const namespace_result: string[] = [];
             for (const file_name of files_list) {
-                if (Array.isArray(wildcard(pattern, file_name)) === true) {
+                if (Array.isArray(wildcard(`${pattern}*`, file_name)) === true) {
                     namespace_result.push(file_name);
                 }
             }
