@@ -1,3 +1,7 @@
+FROM registry.tp.sblogistica.ru/curlimages/curl:builder AS curlbuilder
+RUN curl -k --location https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_x86_64 --output dumb-init
+RUN chmod +x dumb-init
+
 FROM node:20-alpine AS builder
 ARG NPM_REGISTRY=https://registry.npmjs.org
 RUN npm --registry $NPM_REGISTRY install npm -g
@@ -25,13 +29,16 @@ ENV PATH=$PATH:/home/node/.npm-global/bin
 
 WORKDIR /central-config-server
 
-ENTRYPOINT [ "node" ]
-CMD [ "app.js", "--config", "config.toml" ]
-
-RUN apk add --no-cache git && \
-    git version
+ENTRYPOINT [ "/usr/local/bin/dumb-init" ]
+CMD [ "node","app.js", "--config", "config.toml" ]
 
 COPY --from=builder /dist /central-config-server
+COPY --from=curlbuilder dumb-init /usr/local/bin/dumb-init
+
+RUN apk add --no-cache git git-crypt && \
+    git version
+
+RUN chown -R node:node /central-config-server
 
 RUN git version && \
     node --version && \
@@ -40,4 +47,4 @@ RUN git version && \
     npm ci && \
     node app.js -v
 
-USER node
+USER 1000
