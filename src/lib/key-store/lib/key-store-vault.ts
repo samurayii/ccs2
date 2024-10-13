@@ -1,6 +1,6 @@
 import chalk from "chalk";
 import { EventEmitter } from "events";
-import { IKeyStoreEventName, IKeyStoreSource, IKeyStoreSourceVaultV1Config } from "../interfaces";
+import { IKeyStoreEventName, IKeyStoreSource, IKeyStoreSourceVaultConfig } from "../interfaces";
 import { ILoggerEventEmitter } from "logger-event-emitter";
 import { $Inject } from "../../dependency-injection";
 import { IMetrics, Metrics } from "../../metrics";
@@ -14,17 +14,22 @@ interface IGetKeyFromServerResult {
     data?: unknown
 }
 
-interface IVaultV1ResponseBody {
+interface IVaultResponseBody {
     data: {
+        data: {
+            [key: string]: unknown
+        }
         [key: string]: unknown
     }
 }
 
-export class KeyStoreSourceVaultV1 extends EventEmitter implements IKeyStoreSource {
+export class KeyStoreSourceVault extends EventEmitter implements IKeyStoreSource {
 
     private readonly _store: {
         [key: string]: {
             interval: ReturnType<typeof setTimeout>,
+            secret_path: string
+            secret_store_name: string
             data: {
                 [key: string]: {
                     exist: boolean
@@ -37,7 +42,7 @@ export class KeyStoreSourceVaultV1 extends EventEmitter implements IKeyStoreSour
 
     constructor (
         private readonly _name: string,
-        private readonly _config: IKeyStoreSourceVaultV1Config,
+        private readonly _config: IKeyStoreSourceVaultConfig,
         private readonly _logger: ILoggerEventEmitter,
         private readonly _metrics = $Inject<IMetrics>(Metrics)
     ) {
@@ -95,11 +100,11 @@ export class KeyStoreSourceVaultV1 extends EventEmitter implements IKeyStoreSour
 
         const key_name = key_properties[key_properties.length-1];
         key_properties.pop();
-        const key_path = key_properties.join("/");      
+        const id_store = key_properties.join("/");      
 
-        if (this._store[key_path] !== undefined) {
-            if (this._store[key_path].data[key_name] !== undefined) {
-                return this._store[key_path].data[key_name].exist;
+        if (this._store[id_store] !== undefined) {
+            if (this._store[id_store].data[key_name] !== undefined) {
+                return this._store[id_store].data[key_name].exist;
             }
         }
 
@@ -125,13 +130,13 @@ export class KeyStoreSourceVaultV1 extends EventEmitter implements IKeyStoreSour
 
         const key_name = key_properties[key_properties.length-1];
         key_properties.pop();
-        const key_path = key_properties.join("/");
+        const id_store = key_properties.join("/");
 
-        if (this._store[key_path] !== undefined) {
-            if (this._store[key_path].data[key_name] !== undefined) {
-                if (this._store[key_path].data[key_name].exist === true) {
+        if (this._store[id_store] !== undefined) {
+            if (this._store[id_store].data[key_name] !== undefined) {
+                if (this._store[id_store].data[key_name].exist === true) {
                     this._metrics.add("store_key_requests", 1, {source: this._name, type: this._config.type});
-                    return `${this._store[key_path].data[key_name].value}`;
+                    return `${this._store[id_store].data[key_name].value}`;
                 } else {
                     return "";
                 }
@@ -146,7 +151,7 @@ export class KeyStoreSourceVaultV1 extends EventEmitter implements IKeyStoreSour
         
         this._metrics.add("store_key_requests", 1, {source: this._name, type: this._config.type});
 
-        return `${this._store[key_path].data[key_name].value}`;
+        return `${this._store[id_store].data[key_name].value}`;
     }
 
     async run (): Promise<void> {
@@ -159,26 +164,33 @@ export class KeyStoreSourceVaultV1 extends EventEmitter implements IKeyStoreSour
         }
     }
 
-    private async _updateSecret (secret_path: string): Promise<ReturnType<typeof setTimeout>> {
+    private async _updateSecret (id_store: string): Promise<ReturnType<typeof setTimeout>> {
         return setTimeout( async () => {
-            await this._refreshSecret(secret_path);
-            if (this._store[secret_path] !== undefined) {
-                this._store[secret_path].interval = await this._updateSecret(secret_path);
+            await this._refreshSecret(id_store);
+            if (this._store[id_store] !== undefined) {
+                this._store[id_store].interval = await this._updateSecret(id_store);
             }
         }, (convertTime(this._config.refresh.interval)+randomInt(0,convertTime(this._config.refresh.jitter)))*1000);
     }
 
-    private async _refreshSecret (secret_path: string): Promise<void> {
+    private async _refreshSecret (id_store: string): Promise<void> {
 
-        if (this._store[secret_path] === undefined) {
+        if (this._store[id_store] === undefined) {
             return;
         }
 
-        const url = `${this._config.connection.protocol}://${this._config.connection.host}:${this._config.connection.port}/${this._config.connection.path.replace(/^\//,"").replace(/\/$/,"")}v1/${secret_path}`;
+        let url: string;
 
-        this._logger.debug(`Refresh secret ${chalk.cyan(secret_path)} request GET ${chalk.cyan(url)}`);
+        if (this._config.version === "v1") {
+            url = `${this._config.connection.protocol}://${this._config.connection.host}:${this._config.connection.port}/${this._config.connection.path.replace(/^\//,"").replace(/\/$/,"")}v1/${this._store[id_store].secret_store_name}/${this._store[id_store].secret_path}`;
+        }
+        if (this._config.version === "v2") {
+            url = `${this._config.connection.protocol}://${this._config.connection.host}:${this._config.connection.port}/${this._config.connection.path.replace(/^\//,"").replace(/\/$/,"")}v1/${this._store[id_store].secret_store_name}/data/${this._store[id_store].secret_path}`;
+        }
 
-        let secret_body: IVaultV1ResponseBody;
+        this._logger.debug(`Refresh secret ${chalk.cyan(id_store)} request GET ${chalk.cyan(url)}`);
+
+        let secret_body: IVaultResponseBody;
 
         try {
 
@@ -192,7 +204,7 @@ export class KeyStoreSourceVaultV1 extends EventEmitter implements IKeyStoreSour
             });
 
             if (secret_response.status !== 200) {
-                this._logger.error(`Refresh secret ${chalk.cyan(secret_path)} request GET ${chalk.red(url)} is fail. Server return code ${chalk.red(secret_response.status)}`);
+                this._logger.error(`Refresh secret ${chalk.cyan(id_store)} request GET ${chalk.red(url)} is fail. Server return code ${chalk.red(secret_response.status)}`);
                 return;
             }
 
@@ -204,43 +216,56 @@ export class KeyStoreSourceVaultV1 extends EventEmitter implements IKeyStoreSour
             return;
         }
 
-        if (secret_body.data === undefined) {
-            this._logger.error(`Server return empty body:\n${chalk.red(JSON.stringify(secret_body,null,2))}`);
-            return;
+        let result_secret_body: {[key: string]: unknown};
+
+        if (this._config.version === "v1") {
+            if (secret_body.data === undefined) {
+                this._logger.error(`Server return empty body:\n${chalk.red(JSON.stringify(secret_body,null,2))}`);
+                return;
+            }
+            result_secret_body = secret_body.data;
+        }
+        if (this._config.version === "v2") {
+            if (secret_body?.data?.data === undefined) {
+                this._logger.error(`Server return empty body:\n${chalk.red(JSON.stringify(secret_body,null,2))}`);
+                return;
+            }
+            result_secret_body = secret_body.data.data;
         }
 
-        for (const secret_key_name in secret_body.data) {
-            if (this._store[secret_path].data[secret_key_name] === undefined || this._store[secret_path].data[secret_key_name]?.exist === false) {
 
-                const key_name = `${this._name}.${secret_path.replace(/\//g,".")}.${secret_key_name}`;
+        for (const secret_key_name in result_secret_body) {
+            if (this._store[id_store].data[secret_key_name] === undefined || this._store[id_store].data[secret_key_name]?.exist === false) {
+
+                const key_name = `${this._name}.${id_store.replace(/\//g,".")}.${secret_key_name}`;
 
                 this._logger.debug(`Found new key ${chalk.cyan(key_name)}`);
 
-                this._store[secret_path].data[secret_key_name] = {
+                this._store[id_store].data[secret_key_name] = {
                     exist: true,
                     name: key_name,
-                    value: secret_body.data[secret_key_name]
+                    value: result_secret_body[secret_key_name]
                 };
 
                 this.emit("new", key_name);
             } else {
-                if (this._store[secret_path].data[secret_key_name].value !== secret_body.data[secret_key_name]) {
-                    this._store[secret_path].data[secret_key_name].value = secret_body.data[secret_key_name];
-                    this._logger.debug(`Key ${chalk.cyan(this._store[secret_path].data[secret_key_name].name)} changed`);
-                    this.emit("change", this._store[secret_path].data[secret_key_name].name);
+                if (this._store[id_store].data[secret_key_name].value !== result_secret_body[secret_key_name]) {
+                    this._store[id_store].data[secret_key_name].value = result_secret_body[secret_key_name];
+                    this._logger.debug(`Key ${chalk.cyan(this._store[id_store].data[secret_key_name].name)} changed`);
+                    this.emit("change", this._store[id_store].data[secret_key_name].name);
                 }
             }
         }
 
-        for (const key_name in this._store[secret_path].data) {
-            if (secret_body.data[key_name] === undefined) {
-                if (this._store[secret_path].data[key_name].exist === false) {
+        for (const key_name in this._store[id_store].data) {
+            if (result_secret_body[key_name] === undefined) {
+                if (this._store[id_store].data[key_name].exist === false) {
                     continue;
                 }
-                this._store[secret_path].data[key_name].exist = false;
-                this._store[secret_path].data[key_name].value = "";
-                this._logger.debug(`Key ${chalk.cyan(this._store[secret_path].data[key_name].name)} deleted`);
-                this.emit("delete", this._store[secret_path].data[key_name].name);
+                this._store[id_store].data[key_name].exist = false;
+                this._store[id_store].data[key_name].value = "";
+                this._logger.debug(`Key ${chalk.cyan(this._store[id_store].data[key_name].name)} deleted`);
+                this.emit("delete", this._store[id_store].data[key_name].name);
             }
         }
 
@@ -259,24 +284,32 @@ export class KeyStoreSourceVaultV1 extends EventEmitter implements IKeyStoreSour
             };
         }
         
-        const key_secret_name = key_properties[0];
+        const secret_store_name = key_properties[0];
+        const key_name = key_properties[key_properties.length-1];
+        key_properties.pop();
+        key_properties.shift();
+        const secret_path = key_properties.join("/");
+        const id_store = `${secret_store_name}/${secret_path}`;
 
-        if (this._config.secrets.includes(key_secret_name) === false) {
+        if (this._config.secrets.includes(secret_store_name) === false) {
             return {
                 status: "fail",
-                message: `Access denied for secret "${key_secret_name}"`
+                message: `Access denied for secret "${secret_store_name}"`
             };
         }
 
-        const key_name = key_properties[key_properties.length-1];
-        key_properties.pop();
-        const key_path = key_properties.join("/");
+        let url: string;
 
-        const url = `${this._config.connection.protocol}://${this._config.connection.host}:${this._config.connection.port}/${this._config.connection.path.replace(/^\//,"").replace(/\/$/,"")}v1/${key_path}`;
+        if (this._config.version === "v1") {
+            url = `${this._config.connection.protocol}://${this._config.connection.host}:${this._config.connection.port}/${this._config.connection.path.replace(/^\//,"").replace(/\/$/,"")}v1/${secret_store_name}/${secret_path}`;
+        }
+        if (this._config.version === "v2") {
+            url = `${this._config.connection.protocol}://${this._config.connection.host}:${this._config.connection.port}/${this._config.connection.path.replace(/^\//,"").replace(/\/$/,"")}v1/${secret_store_name}/data/${secret_path}`;
+        }
 
         this._logger.debug(`Request GET ${chalk.cyan(url)}`);
 
-        let secret_body: IVaultV1ResponseBody;
+        let secret_body: IVaultResponseBody;
 
         try {
 
@@ -308,41 +341,59 @@ export class KeyStoreSourceVaultV1 extends EventEmitter implements IKeyStoreSour
             };
         }
 
-        if (secret_body.data === undefined) {
-            this._logger.error(`Server return empty body:\n${chalk.red(JSON.stringify(secret_body,null,2))}`);
-            return {
-                status: "fail",
-                message: `Key "${id}" not found`
-            };
+        let result_secret_body: {[key: string]: unknown};
+        
+        if (this._config.version === "v1") {
+            if (secret_body.data === undefined) {
+                this._logger.error(`Server return empty body:\n${chalk.red(JSON.stringify(secret_body,null,2))}`);
+                return {
+                    status: "fail",
+                    message: `Key "${id}" not found`
+                };
+            }
+            result_secret_body = secret_body.data;
+        }
+        if (this._config.version === "v2") {
+            if (secret_body?.data?.data === undefined) {
+                this._logger.error(`Server return empty body:\n${chalk.red(JSON.stringify(secret_body,null,2))}`);
+                return {
+                    status: "fail",
+                    message: `Key "${id}" not found`
+                };
+            }
+            result_secret_body = secret_body.data.data;
         }
 
-        if (this._store[key_path] === undefined) {
-            this._store[key_path] = {
-                interval: await this._updateSecret(key_path),
+        if (this._store[id_store] === undefined) {
+            this._store[id_store] = {
+                interval: await this._updateSecret(id_store),
+                secret_path: secret_path,
+                secret_store_name: secret_store_name,
                 data: {}
             };
-            this._logger.debug(`Created record for secret path ${chalk.cyan(key_path)}`);
-        }
-        for (const secret_key_name in secret_body.data) {
-            this._store[key_path].data[secret_key_name] = {
-                exist: true,
-                name: `${this._name}.${key_properties.join(".")}.${secret_key_name}`,
-                value: secret_body.data[secret_key_name]
-            };
+            this._logger.debug(`Created record for secret path ${chalk.cyan(id_store)}`);
         }
 
-        if (this._store[key_path].data[key_name] === undefined) {
-            this._store[key_path].data[key_name] = {
+        for (const secret_key_name in result_secret_body) {
+            this._store[id_store].data[secret_key_name] = {
+                exist: true,
+                name: `${this._name}.${secret_store_name}.${key_properties.join(".")}.${secret_key_name}`,
+                value: result_secret_body[secret_key_name]
+            };
+        }      
+
+        if (this._store[id_store].data[key_name] === undefined) {
+            this._store[id_store].data[key_name] = {
                 exist: false,
-                name: `${this._name}.${key_properties.join(".")}.${key_name}`,
+                name: `${this._name}.${secret_store_name}.${key_properties.join(".")}.${key_name}`,
                 value: ""
             };
         }
 
-        if (this._store[key_path].data[key_name].exist === true) {
+        if (this._store[id_store].data[key_name].exist === true) {
             return {
                 status: "success",
-                data: this._store[key_path].data[key_name].value
+                data: this._store[id_store].data[key_name].value
             }; 
         } else {
             return {

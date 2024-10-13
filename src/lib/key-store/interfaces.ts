@@ -30,7 +30,7 @@ export interface IKeyStoreConfig {
     source: IKeyStoreSourceConfig
 }
 
-export type TKeyStoreSourceConfigType = "env" | "git" | "fs" | "git-crypt" | "vault-v1"
+export type TKeyStoreSourceConfigType = "env" | "git" | "fs" | "git-crypt" | "vault"
 
 export interface IKeyStoreSourceConfig {
     type: TKeyStoreSourceConfigType
@@ -73,8 +73,9 @@ export interface IKeyStoreSourceGitCryptConfig extends IKeyStoreSourceGitConfig 
     crypt_key_path: string
 }
 
-export interface IKeyStoreSourceVaultV1Config extends IKeyStoreSourceConfig {
+export interface IKeyStoreSourceVaultConfig extends IKeyStoreSourceConfig {
     token: string
+    version: "v1" | "v2"
     secrets: string[]
     connection: {
         host: string

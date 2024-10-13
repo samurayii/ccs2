@@ -1,12 +1,12 @@
 import { EventEmitter } from "events";
-import { IKeyStore, IKeyStoreConfig, IKeyStoreEventName, IKeyStoreSource, IKeyStoreSourceEnvConfig, IKeyStoreSourceFSConfig, IKeyStoreSourceGitConfig, IKeyStoreSourceGitCryptConfig, IKeyStoreSourceVaultV1Config } from "./interfaces";
+import { IKeyStore, IKeyStoreConfig, IKeyStoreEventName, IKeyStoreSource, IKeyStoreSourceEnvConfig, IKeyStoreSourceFSConfig, IKeyStoreSourceGitConfig, IKeyStoreSourceGitCryptConfig, IKeyStoreSourceVaultConfig } from "./interfaces";
 import { ILoggerEventEmitter } from "logger-event-emitter";
 import chalk from "chalk";
 import { KeyStoreSourceEnv } from "./lib/key-store-env";
 import { KeyStoreSourceFS } from "./lib/key-store-fs";
 import { KeyStoreSourceGit } from "./lib/key-store-git";
 import { KeyStoreSourceGitCrypt } from "./lib/key-store-git-crypt";
-import { KeyStoreSourceVaultV1 } from "./lib/key-store-vault";
+import { KeyStoreSourceVault } from "./lib/key-store-vault";
 
 
 export * from "./interfaces";
@@ -37,8 +37,8 @@ export class KeyStore extends EventEmitter implements IKeyStore {
             this._source = new KeyStoreSourceGitCrypt(this._config.name, <IKeyStoreSourceGitCryptConfig>this._config.source, this._logger);
         }
 
-        if (this._config.source.type === "vault-v1") {
-            this._source = new KeyStoreSourceVaultV1(this._config.name, <IKeyStoreSourceVaultV1Config>this._config.source, this._logger);
+        if (this._config.source.type === "vault") {
+            this._source = new KeyStoreSourceVault(this._config.name, <IKeyStoreSourceVaultConfig>this._config.source, this._logger);
         }
 
         if (this._source === undefined) {

@@ -11,7 +11,7 @@
 - [Git](#git)
 - [Git-crypt](#git-crypt)
 - **Consul** в разработке
-- [Vault](#git-vault-v1)
+- [Vault](#git-vault)
 
 ## <a name="env"></a> Environment хранилище
 
@@ -164,9 +164,9 @@
         repository = "https://user:password@server:3000/repository.git"
 ```
 
-## <a name="git-vault-v1"></a> Vault V1 хранилище
+## <a name="git-vault"></a> Vault хранилище
 
-Хранилище считывает переменные с сервера Vault используя API V1.
+Хранилище считывает переменные с сервера Vault используя API.
 
 ### Пример файла конфигурации config.toml
 
@@ -182,7 +182,8 @@
     enable = true                   # активация
     description = ""                # описание
     [key_stores.source]                 # источник
-        type = "vault-v1"               # тип источника
+        type = "vault"                  # тип источника
+        version = "v1"                  # версия API v1 или v2
         secrets = []                    # доступные хранилища на сервере        
         token = "xxxxxxxxxx"            # токен доступа на сервер
         [key_stores.source.connection]  # настройка подключения
@@ -203,99 +204,3 @@
         type = "git"
         repository = "https://user:password@server:3000/repository.git"
 ```
-
-
-
-
-{
-    "type": "object",
-    "properties": {
-        "type": {
-            "type": "string",
-            "const": "vault-v1"
-        },
-        "secrets": {
-            "type": "array",
-            "default": [],
-            "items": {
-                "type": "string",
-                "minLength": 1
-            },
-            "minItems": 0
-        },
-        "token": {
-            "type": "string",
-            "default": "",
-            "minLength": 1,
-            "maxLength": 128
-        },
-        "connection": {
-            "type": "object",
-            "properties": {
-                "host": {
-                    "type": "string",
-                    "default": "",
-                    "minLength": 1,
-                    "maxLength": 128
-                },
-                "protocol": {
-                    "type": "string",
-                    "default": "https",
-                    "enum": ["http","https"]
-                },
-                "port": {
-                    "type": "integer",
-                    "default": 8200,
-                    "minimum": 1
-                },
-                "path": {
-                    "type": "string",
-                    "default": "/",
-                    "minLength": 0,
-                    "maxLength": 32,
-                    "pattern": "^(\/[a-zA-Z]{1}|)[-a-zA-Z0-9\/]{0,31}$"
-                },
-                "timeout": {
-                    "type": "string",
-                    "default": "10s",
-                    "pattern": "^[0-9]{1}[smhd]{0,1}[0-9smhd]*[mhsd]{1}"
-                }
-            },
-            "additionalProperties": false,
-            "required": [
-                "host",
-                "protocol",
-                "port",
-                "path",
-                "timeout"
-            ]
-        },        
-        "refresh": {
-            "type": "object",
-            "properties": {
-                "interval": {
-                    "type": "string",
-                    "default": "20s",
-                    "pattern": "^[0-9]{1}[smhd]{0,1}[0-9smhd]*[mhsd]{1}"
-                },
-                "jitter": {
-                    "type": "string",
-                    "default": "5s",
-                    "pattern": "^[0-9]{1}[smhd]{0,1}[0-9smhd]*[mhsd]{1}"
-                }
-            },
-            "required": [
-                "interval",
-                "jitter"
-            ]
-        }
-    },
-    "additionalProperties": false,
-    "required": [
-        "type",
-        "secrets",
-        "refresh",
-        "connection",
-        "token"
-    ]
-}

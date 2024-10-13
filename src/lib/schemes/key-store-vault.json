@@ -3,7 +3,12 @@
     "properties": {
         "type": {
             "type": "string",
-            "const": "vault-v1"
+            "const": "vault"
+        },
+        "version": {
+            "type": "string",
+            "default": "v1",
+            "enum": ["v1","v2"]
         },
         "secrets": {
             "type": "array",
@@ -84,6 +89,7 @@
     "additionalProperties": false,
     "required": [
         "type",
+        "version",
         "secrets",
         "refresh",
         "connection",

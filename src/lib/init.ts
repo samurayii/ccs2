@@ -15,12 +15,12 @@ import * as key_store_fs_schema from "./schemes/key-store-fs.json";
 import * as key_store_git_schema from "./schemes/key-store-git.json";
 import * as key_store_git_crypt_schema from "./schemes/key-store-git-crypt.json";
 import * as key_store_schema from "./schemes/key-store.json";
-import * as key_store_vault_v1_schema from "./schemes/key-store-vault-v1.json";
+import * as key_store_vault_v1_schema from "./schemes/key-store-vault.json";
 import { IAppConfig } from "./config.interfaces";
 import { AjvErrorHelper } from "./tools/ajv_error_helper";
 import { findPackage } from "./tools/find_package";
 import { INamespaceConfig, INamespaceSourceFSConfig, INamespaceSourceGitConfig, INamespaceSourceGitCryptConfig } from "./namespace";
-import { IKeyStoreConfig, IKeyStoreSourceEnvConfig, IKeyStoreSourceFSConfig, IKeyStoreSourceGitConfig, IKeyStoreSourceGitCryptConfig, IKeyStoreSourceVaultV1Config } from "./key-store";
+import { IKeyStoreConfig, IKeyStoreSourceEnvConfig, IKeyStoreSourceFSConfig, IKeyStoreSourceGitConfig, IKeyStoreSourceGitCryptConfig, IKeyStoreSourceVaultConfig } from "./key-store";
 
 type TOptions = {
     config: string
@@ -97,9 +97,9 @@ for (let key_store_config of config.key_stores) {
 
     let validate_key_store_source;
 
-    if (key_store_config.source.type === "vault-v1") {
+    if (key_store_config.source.type === "vault") {
         validate_key_store_source = ajv.compile(key_store_vault_v1_schema);
-        key_store_config.source = <IKeyStoreSourceVaultV1Config>json_from_schema(key_store_config.source, key_store_vault_v1_schema);
+        key_store_config.source = <IKeyStoreSourceVaultConfig>json_from_schema(key_store_config.source, key_store_vault_v1_schema);
     }
     
     if (key_store_config.source.type === "env") {
