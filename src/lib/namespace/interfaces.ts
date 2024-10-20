@@ -40,8 +40,8 @@ export interface INamespaceSourceConfig {
 }
 
 export interface INamespaceSourceGitConfig extends INamespaceSourceConfig {
-    include_regexp: string
-    exclude_regexp: string
+    include_regexp: string[]
+    exclude_regexp: string[]
     size: string
     tmp: string
     cron: {
@@ -60,8 +60,8 @@ export interface INamespaceSourceGitCryptConfig extends INamespaceSourceGitConfi
 }
 
 export interface INamespaceSourceFSConfig extends INamespaceSourceConfig {
-    include_regexp: string
-    exclude_regexp: string
+    include_regexp: string[]
+    exclude_regexp: string[]
     size: string
     path: string
     cron: {

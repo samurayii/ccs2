@@ -13,6 +13,12 @@
 - **Consul** в разработке
 - [Vault](#git-vault)
 
+## Общие переменные среды
+
+- CCS_KEY_STORE_<имя хранилища>_ENABLE
+- CCS_KEY_STORE_<имя хранилища>_DESCRIPTION
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_TYPE
+
 ## <a name="env"></a> Environment хранилище
 
 Хранилище считывает переменные среды и если они удовлетворяют требованиям префикса, формирует из них ключи. Название ключей формируются из названия переменой в нижнем регистре и с отсечением префикса.
@@ -42,6 +48,10 @@
         type = "git"
         repository = "https://user:password@server:3000/repository.git"
 ```
+
+### Дополнительные переменные среды
+
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_KEY_PREFIX
 
 ## <a name="fs"></a> File-system хранилище
 
@@ -80,6 +90,17 @@
         type = "git"
         repository = "https://user:password@server:3000/repository.git"
 ```
+
+### Дополнительные переменные среды
+
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_INCLUDE_REGEXP
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_EXCLUDE_REGEXP
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_SIZE
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_PATH
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_CRON_ENABLE
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_CRON_INTERVAL
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_CRON_TIME_ZONE
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_CRON_JITTER
 
 ## <a name="git"></a> Git хранилище
 
@@ -122,6 +143,20 @@
         repository = "https://user:password@server:3000/repository.git"
 ```
 
+### Дополнительные переменные среды
+
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_INCLUDE_REGEXP
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_EXCLUDE_REGEXP
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_SIZE
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_TMP
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_COMMIT_COUNT
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_REPOSITORY
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_BRANCH
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_CRON_ENABLE
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_CRON_INTERVAL
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_CRON_TIME_ZONE
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_CRON_JITTER
+
 ## <a name="git-crypt"></a> Git-crypt хранилище
 
 Хранилище считывает переменные из файлов в указанном git репозитории зашифрованные колючём git-crypt, файлы должны быть формата json, yaml или toml. Название ключей формируются из названия дочерней папки, файла и ключа файла в нижнем регистре.
@@ -140,7 +175,7 @@
     enable = true                   # активация
     description = ""                # описание
     [key_stores.source]                                                 # источник
-        type = "git"                                                    # тип источника
+        type = "git-crypt"                                              # тип источника
         include_regexp = [".*"]                                         # файлы будут включены в поиск        
         exclude_regexp = ["\\.md$"]                                     # файлы будут исключены из поиска
         tmp = "tmp"                                                     # временная папка
@@ -163,6 +198,21 @@
         type = "git"
         repository = "https://user:password@server:3000/repository.git"
 ```
+
+### Дополнительные переменные среды
+
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_INCLUDE_REGEXP
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_EXCLUDE_REGEXP
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_SIZE
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_TMP
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_COMMIT_COUNT
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_REPOSITORY
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_BRANCH
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_CRON_ENABLE
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_CRON_INTERVAL
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_CRON_TIME_ZONE
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_CRON_JITTER
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_CRYPT_KEY_PATH
 
 ## <a name="git-vault"></a> Vault хранилище
 
@@ -204,3 +254,16 @@
         type = "git"
         repository = "https://user:password@server:3000/repository.git"
 ```
+
+### Дополнительные переменные среды
+
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_VERSION
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_SECRETS
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_TOKEN
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_REFRESH_INTERVAL
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_REFRESH_JITTER
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_CONNECTION_HOST
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_CONNECTION_PROTOCOL
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_CONNECTION_PORT
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_CONNECTION_PATH
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_CONNECTION_TIMEOUT

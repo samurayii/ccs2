@@ -12,6 +12,12 @@
 - **Consul** в разработке
 - **Vault** в разработке
 
+## Общие переменные среды
+
+- CCS_KEY_STORE_<имя хранилища>_ENABLE
+- CCS_KEY_STORE_<имя хранилища>_DESCRIPTION
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_TYPE
+
 ## <a name="fs"></a> File-system хранилище
 
 Хранилище считывает файлы в указанной папке.
@@ -49,6 +55,17 @@
             interval = "*/15 * * * * *"     # интервал
             time_zone = "Europe/Moscow"     # временная зона
 ```
+
+### Дополнительные переменные среды
+
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_INCLUDE_REGEXP
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_EXCLUDE_REGEXP
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_SIZE
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_PATH
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_CRON_ENABLE
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_CRON_INTERVAL
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_CRON_TIME_ZONE
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_CRON_JITTER
 
 ## <a name="git"></a> Git хранилище
 
@@ -91,6 +108,20 @@
             time_zone = "Europe/Moscow"     # временная зона
 ```
 
+### Дополнительные переменные среды
+
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_INCLUDE_REGEXP
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_EXCLUDE_REGEXP
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_SIZE
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_TMP
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_COMMIT_COUNT
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_REPOSITORY
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_BRANCH
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_CRON_ENABLE
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_CRON_INTERVAL
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_CRON_TIME_ZONE
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_CRON_JITTER
+
 ## <a name="git-crypt"></a> Git-crypt хранилище
 
 Хранилище считывает файлы в указанном git репозитории зашифрованные колючём git-crypt.
@@ -117,7 +148,7 @@
     description = ""                # описание
     links = []                      # массив названий подключаемых хранилищ ключей
     [namespaces.source]
-        type = "git"                                                    # тип источника
+        type = "git-crypt"                                              # тип источника
         include_regexp = [".*"]                                         # файлы будут включены в поиск        
         exclude_regexp = ["\\.md$"]                                     # файлы будут исключены из поиска
         tmp = "tmp"                                                     # временная папка
@@ -132,3 +163,18 @@
             interval = "*/15 * * * * *"     # интервал
             time_zone = "Europe/Moscow"     # временная зона
 ```
+
+### Дополнительные переменные среды
+
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_INCLUDE_REGEXP
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_EXCLUDE_REGEXP
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_SIZE
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_TMP
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_COMMIT_COUNT
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_REPOSITORY
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_BRANCH
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_CRON_ENABLE
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_CRON_INTERVAL
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_CRON_TIME_ZONE
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_CRON_JITTER
+- CCS_KEY_STORE_<имя хранилища>_SOURCE_CRYPT_KEY_PATH

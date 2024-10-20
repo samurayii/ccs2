@@ -19,8 +19,8 @@ import * as key_store_vault_v1_schema from "./schemes/key-store-vault.json";
 import { IAppConfig } from "./config.interfaces";
 import { AjvErrorHelper } from "./tools/ajv_error_helper";
 import { findPackage } from "./tools/find_package";
-import { INamespaceConfig, INamespaceSourceFSConfig, INamespaceSourceGitConfig, INamespaceSourceGitCryptConfig } from "./namespace";
-import { IKeyStoreConfig, IKeyStoreSourceEnvConfig, IKeyStoreSourceFSConfig, IKeyStoreSourceGitConfig, IKeyStoreSourceGitCryptConfig, IKeyStoreSourceVaultConfig } from "./key-store";
+import { INamespaceConfig, INamespaceSourceFSConfig, INamespaceSourceGitConfig, INamespaceSourceGitCryptConfig, TNamespaceSourceConfigType } from "./namespace";
+import { IKeyStoreConfig, IKeyStoreSourceEnvConfig, IKeyStoreSourceFSConfig, IKeyStoreSourceGitConfig, IKeyStoreSourceGitCryptConfig, IKeyStoreSourceVaultConfig, TKeyStoreSourceConfigType } from "./key-store";
 
 type TOptions = {
     config: string
@@ -95,21 +95,107 @@ for (let key_store_config of config.key_stores) {
         process.exit(1);
     }
 
+    if (process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_ENABLE`] !== undefined) {
+        if (process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_ENABLE`] === "false") {
+            key_store_config.enable = false;
+        } else {
+            key_store_config.enable = true;
+        }
+    }
+
+    if (process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_DESCRIPTION`] !== undefined) {
+        key_store_config.description = process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_DESCRIPTION`];
+    }
+
+    if (process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_TYPE`] !== undefined) {
+        key_store_config.source.type = <TKeyStoreSourceConfigType>process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_TYPE`];
+    }
+
     let validate_key_store_source;
 
     if (key_store_config.source.type === "vault") {
         validate_key_store_source = ajv.compile(key_store_vault_v1_schema);
         key_store_config.source = <IKeyStoreSourceVaultConfig>json_from_schema(key_store_config.source, key_store_vault_v1_schema);
+        const source = <IKeyStoreSourceVaultConfig>key_store_config.source;
+
+        if (process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_VERSION`] !== undefined) {
+            source.version = <"v1"|"v2">process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_VERSION`];
+        }
+        if (process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_SECRETS`] !== undefined) {
+            source.secrets = process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_SECRETS`].split(",");
+        }
+        if (process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_TOKEN`] !== undefined) {
+            source.token = process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_TOKEN`];
+        }
+        if (process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_REFRESH_INTERVAL`] !== undefined) {
+            source.refresh.interval = process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_TOKEN_REFRESH_INTERVAL`];
+        }
+        if (process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_REFRESH_JITTER`] !== undefined) {
+            source.refresh.jitter = process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_TOKEN_REFRESH_JITTER`];
+        }
+        if (process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_CONNECTION_HOST`] !== undefined) {
+            source.connection.host = process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_TOKEN_CONNECTION_HOST`];
+        }
+        if (process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_CONNECTION_PROTOCOL`] !== undefined) {
+            source.connection.protocol = <"https"|"http">process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_TOKEN_CONNECTION_PROTOCOL`];
+        }
+        if (process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_CONNECTION_PORT`] !== undefined) {
+            source.connection.port = parseInt(process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_TOKEN_CONNECTION_PORT`]);
+        }
+        if (process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_CONNECTION_PATH`] !== undefined) {
+            source.connection.path = process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_TOKEN_CONNECTION_PATH`];
+        }
+        if (process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_CONNECTION_TIMEOUT`] !== undefined) {
+            source.connection.timeout = process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_TOKEN_CONNECTION_TIMEOUT`];
+        }
+        key_store_config.source = source;
     }
     
     if (key_store_config.source.type === "env") {
         validate_key_store_source = ajv.compile(key_store_env_schema);
         key_store_config.source = <IKeyStoreSourceEnvConfig>json_from_schema(key_store_config.source, key_store_env_schema);
+        const source = <IKeyStoreSourceEnvConfig>key_store_config.source;
+        if (process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_KEY_PREFIX`] !== undefined) {
+            source.key_prefix = process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_KEY_PREFIX`];
+        }
+        key_store_config.source = source;
     }
 
     if (key_store_config.source.type === "fs") {
         validate_key_store_source = ajv.compile(key_store_fs_schema);
         key_store_config.source = <IKeyStoreSourceFSConfig>json_from_schema(key_store_config.source, key_store_fs_schema);
+        const source = <IKeyStoreSourceFSConfig>key_store_config.source;
+
+        if (process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_INCLUDE_REGEXP`] !== undefined) {
+            source.include_regexp = process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_INCLUDE_REGEXP`].split(",");
+        }
+        if (process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_EXCLUDE_REGEXP`] !== undefined) {
+            source.exclude_regexp = process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_EXCLUDE_REGEXP`].split(",");
+        }
+        if (process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_SIZE`] !== undefined) {
+            source.size = process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_SIZE`];
+        }
+        if (process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_PATH`] !== undefined) {
+            source.path = process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_PATH`];
+        }
+        if (process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_CRON_ENABLE`] !== undefined) {
+            if (process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_CRON_ENABLE`] === "false") {
+                source.cron.enable = false;
+            } else {
+                source.cron.enable = true;
+            }
+        }
+        if (process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_CRON_INTERVAL`] !== undefined) {
+            source.cron.interval = process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_CRON_INTERVAL`];
+        }
+        if (process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_CRON_TIME_ZONE`] !== undefined) {
+            source.cron.time_zone = process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_CRON_TIME_ZONE`];
+        }
+        if (process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_CRON_JITTER`] !== undefined) {
+            source.cron.jitter = parseInt(process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_CRON_JITTER`]);
+        }
+
+        key_store_config.source = source;
     }
 
     if (key_store_config.source.type === "git") {
@@ -120,6 +206,53 @@ for (let key_store_config of config.key_stores) {
     if (key_store_config.source.type === "git-crypt") {
         validate_key_store_source = ajv.compile(key_store_git_crypt_schema);
         key_store_config.source = <IKeyStoreSourceGitCryptConfig>json_from_schema(key_store_config.source, key_store_git_crypt_schema);
+    }
+
+    if (key_store_config.source.type === "git" || key_store_config.source.type === "git-crypt") {
+        const source = <IKeyStoreSourceGitCryptConfig>key_store_config.source;
+
+        if (process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_INCLUDE_REGEXP`] !== undefined) {
+            source.include_regexp = process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_INCLUDE_REGEXP`].split(",");
+        }
+        if (process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_EXCLUDE_REGEXP`] !== undefined) {
+            source.exclude_regexp = process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_EXCLUDE_REGEXP`].split(",");
+        }
+        if (process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_SIZE`] !== undefined) {
+            source.size = process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_SIZE`];
+        }
+        if (process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_TMP`] !== undefined) {
+            source.tmp = process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_TMP`];
+        }
+        if (process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_COMMIT_COUNT`] !== undefined) {
+            source.commit_count = parseInt(process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_COMMIT_COUNT`]);
+        }
+        if (process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_REPOSITORY`] !== undefined) {
+            source.repository = process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_REPOSITORY`];
+        }
+        if (process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_BRANCH`] !== undefined) {
+            source.branch = process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_BRANCH`];
+        }
+
+        if (process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_CRON_ENABLE`] !== undefined) {
+            if (process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_CRON_ENABLE`] === "false") {
+                source.cron.enable = false;
+            } else {
+                source.cron.enable = true;
+            }
+        }
+        if (process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_CRON_INTERVAL`] !== undefined) {
+            source.cron.interval = process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_CRON_INTERVAL`];
+        }
+        if (process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_CRON_TIME_ZONE`] !== undefined) {
+            source.cron.time_zone = process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_CRON_TIME_ZONE`];
+        }
+        if (process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_CRON_JITTER`] !== undefined) {
+            source.cron.jitter = parseInt(process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_CRON_JITTER`]);
+        }
+        if (process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_CRYPT_KEY_PATH`] !== undefined) {
+            source.crypt_key_path = process.env[`CCS_KEY_STORE_${key_store_config.name.toUpperCase()}_SOURCE_CRYPT_KEY_PATH`];
+        }
+        key_store_config.source = source;
     }
 
     if (validate_key_store_source === undefined) {
@@ -162,11 +295,59 @@ for (let namespace_config of config.namespaces) {
         process.exit(1);
     }
 
+    if (process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_ENABLE`] !== undefined) {
+        if (process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_ENABLE`] === "false") {
+            namespace_config.enable = false;
+        } else {
+            namespace_config.enable = true;
+        }
+    }
+
+    if (process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_DESCRIPTION`] !== undefined) {
+        namespace_config.description = process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_DESCRIPTION`];
+    }
+
+    if (process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_SOURCE_TYPE`] !== undefined) {
+        namespace_config.source.type = <TNamespaceSourceConfigType>process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_SOURCE_TYPE`];
+    }
+
     let validate_source;
     
     if (namespace_config.source.type === "fs") {
         validate_source = ajv.compile(namespace_fs_source_schema);
         namespace_config.source = <INamespaceSourceFSConfig>json_from_schema(namespace_config.source, namespace_fs_source_schema);
+        const source = <INamespaceSourceFSConfig>namespace_config.source;
+
+        if (process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_SOURCE_INCLUDE_REGEXP`] !== undefined) {
+            source.include_regexp = process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_SOURCE_INCLUDE_REGEXP`].split(",");
+        }
+        if (process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_SOURCE_EXCLUDE_REGEXP`] !== undefined) {
+            source.exclude_regexp = process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_SOURCE_EXCLUDE_REGEXP`].split(",");
+        }
+        if (process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_SOURCE_SIZE`] !== undefined) {
+            source.size = process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_SOURCE_SIZE`];
+        }
+        if (process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_SOURCE_PATH`] !== undefined) {
+            source.path = process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_SOURCE_PATH`];
+        }
+        if (process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_SOURCE_CRON_ENABLE`] !== undefined) {
+            if (process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_SOURCE_CRON_ENABLE`] === "false") {
+                source.cron.enable = false;
+            } else {
+                source.cron.enable = true;
+            }
+        }
+        if (process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_SOURCE_CRON_INTERVAL`] !== undefined) {
+            source.cron.interval = process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_SOURCE_CRON_INTERVAL`];
+        }
+        if (process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_SOURCE_CRON_TIME_ZONE`] !== undefined) {
+            source.cron.time_zone = process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_SOURCE_CRON_TIME_ZONE`];
+        }
+        if (process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_SOURCE_CRON_JITTER`] !== undefined) {
+            source.cron.jitter = parseInt(process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_SOURCE_CRON_JITTER`]);
+        }
+
+        namespace_config.source = source;
     }
 
     if (namespace_config.source.type === "git") {
@@ -177,6 +358,53 @@ for (let namespace_config of config.namespaces) {
     if (namespace_config.source.type === "git-crypt") {
         validate_source = ajv.compile(namespace_git_crypt_source_schema);
         namespace_config.source = <INamespaceSourceGitCryptConfig>json_from_schema(namespace_config.source, namespace_git_crypt_source_schema);
+    }
+
+    if (namespace_config.source.type === "git" || namespace_config.source.type === "git-crypt") {
+        const source = <INamespaceSourceGitCryptConfig>namespace_config.source;
+
+        if (process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_SOURCE_INCLUDE_REGEXP`] !== undefined) {
+            source.include_regexp = process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_SOURCE_INCLUDE_REGEXP`].split(",");
+        }
+        if (process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_SOURCE_EXCLUDE_REGEXP`] !== undefined) {
+            source.exclude_regexp = process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_SOURCE_EXCLUDE_REGEXP`].split(",");
+        }
+        if (process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_SOURCE_SIZE`] !== undefined) {
+            source.size = process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_SOURCE_SIZE`];
+        }
+        if (process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_SOURCE_TMP`] !== undefined) {
+            source.tmp = process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_SOURCE_TMP`];
+        }
+        if (process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_SOURCE_COMMIT_COUNT`] !== undefined) {
+            source.commit_count = parseInt(process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_SOURCE_COMMIT_COUNT`]);
+        }
+        if (process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_SOURCE_REPOSITORY`] !== undefined) {
+            source.repository = process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_SOURCE_REPOSITORY`];
+        }
+        if (process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_SOURCE_BRANCH`] !== undefined) {
+            source.branch = process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_SOURCE_BRANCH`];
+        }
+
+        if (process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_SOURCE_CRON_ENABLE`] !== undefined) {
+            if (process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_SOURCE_CRON_ENABLE`] === "false") {
+                source.cron.enable = false;
+            } else {
+                source.cron.enable = true;
+            }
+        }
+        if (process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_SOURCE_CRON_INTERVAL`] !== undefined) {
+            source.cron.interval = process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_SOURCE_CRON_INTERVAL`];
+        }
+        if (process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_SOURCE_CRON_TIME_ZONE`] !== undefined) {
+            source.cron.time_zone = process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_SOURCE_CRON_TIME_ZONE`];
+        }
+        if (process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_SOURCE_CRON_JITTER`] !== undefined) {
+            source.cron.jitter = parseInt(process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_SOURCE_CRON_JITTER`]);
+        }
+        if (process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_SOURCE_CRYPT_KEY_PATH`] !== undefined) {
+            source.crypt_key_path = process.env[`CCS_NAMESPACE_${namespace_config.name.toUpperCase()}_SOURCE_CRYPT_KEY_PATH`];
+        }
+        namespace_config.source = source;
     }
 
     if (validate_source === undefined) {

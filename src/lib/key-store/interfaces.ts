@@ -41,8 +41,8 @@ export interface IKeyStoreSourceEnvConfig extends IKeyStoreSourceConfig {
 }
 
 export interface IKeyStoreSourceFSConfig extends IKeyStoreSourceConfig {
-    include_regexp: string
-    exclude_regexp: string
+    include_regexp: string[]
+    exclude_regexp: string[]
     size: string
     path: string
     cron: {
@@ -54,8 +54,8 @@ export interface IKeyStoreSourceFSConfig extends IKeyStoreSourceConfig {
 }
 
 export interface IKeyStoreSourceGitConfig extends IKeyStoreSourceConfig {
-    include_regexp: string
-    exclude_regexp: string
+    include_regexp: string[]
+    exclude_regexp: string[]
     size: string
     tmp: string
     cron: {

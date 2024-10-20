@@ -87,26 +87,6 @@
             "default": "",
             "minLength": 1,
             "maxLength": 256
-        },
-        "cache": {
-            "type": "object",
-            "default": {},
-            "properties": {
-                "path": {
-                    "type": "string",
-                    "default": "cache",
-                    "minLength": 1,
-                    "maxLength": 256
-                },
-                "enable": {
-                    "type": "boolean",
-                    "default": false
-                }
-            },
-            "required": [
-                "enable",
-                "path"
-            ]
         }
     },
     "additionalProperties": false,
@@ -120,7 +100,6 @@
         "commit_count",
         "repository",
         "branch",
-        "crypt_key_path",
-        "cache"
+        "crypt_key_path"
     ]
 }
